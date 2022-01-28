@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 
 <head>
-
+  <title>WORDLE Clone</title>
 </head>
 
 <body>
   <style>
     :root {
+      --dark-gray: #222;
       --right-gray: #aaa;
       --gray: #555;
       --space-small: .5rem;
@@ -15,7 +16,7 @@
     html,
     body {
       color: #DDD;
-      background-color: #222
+      background-color: var(--dark-gray);
     }
 
     #app {
@@ -47,6 +48,8 @@
       font-weight: bold;
       text-transform: uppercase;
     }
+
+    @keyframes beat {}
   </style>
   <main id="app">
     <header>
