@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 
 <head>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
   <title>WORDLE Clone</title>
 </head>
 
@@ -49,7 +51,44 @@
       text-transform: uppercase;
     }
 
-    @keyframes beat {}
+    /* entire container, keeps perspective */
+    .flip-container {
+      perspective: 1000px;
+      position: relative;
+    }
+
+    /* flip speed goes here */
+    .flipper {
+      width: 100%;
+      height: 100%;
+      transition: 0.6s;
+      transform-style: preserve-3d;
+      transform-origin: 0 50%;
+      position: relative;
+    }
+
+    /* hide back of pane during swap */
+    .front,
+    .back {
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* front pane, placed above back */
+    .front {
+      z-index: 2;
+      /* for firefox 31 */
+      transform: rotateX(0deg);
+    }
+
+    /* back, initially hidden pane */
+    .back {
+      transform: rotateX(180deg);
+    }
   </style>
   <main id="app">
     <header>

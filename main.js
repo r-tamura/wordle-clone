@@ -30,18 +30,34 @@ const randomIndex = Math.floor(Math.random() * wordList.length);
 const secret = wordList[randomIndex];
 
 let isGameEnd = false;
+let isFlipping = false;
 
 function buildGrid() {
   for (let i = 0; i < 6; i++) {
     const row = document.createElement("div");
     row.classList.add("row");
     for (let j = 0; j < 5; j++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
+      const cell = buildCell();
       row.appendChild(cell);
     }
     grid.appendChild(row);
   }
+}
+
+function buildCell() {
+  const flipContainer = document.createElement("div");
+  flipContainer.classList.add("flip-container");
+  flipContainer.classList.add("cell");
+  const flipper = document.createElement("div");
+  flipper.classList.add("flipper");
+  const front = document.createElement("div");
+  front.classList.add("front");
+  const back = document.createElement("div");
+  back.classList.add("back");
+  flipContainer.appendChild(flipper);
+  flipper.appendChild(front);
+  flipper.appendChild(back);
+  return flipContainer;
 }
 
 function updateGrid() {
@@ -53,9 +69,12 @@ function updateGrid() {
     for (let j = 0; j < 5; j++) {
       const cell = cells[j];
       const char = attempt[j] ?? "";
-      cell.textContent = char;
-      cell.style.borderColor = char === "" ? GRAY : LIGHTGRAY;
-      cell.style.backgroundColor =
+      const [front, back] = cell.querySelectorAll(".front, .back");
+      front.textContent = char;
+      back.textContent = char;
+      front.backgroundColor = DARKGRAY;
+      front.style.borderColor = char === "" ? GRAY : LIGHTGRAY;
+      back.style.backgroundColor =
         i === gameHistory.length ? DARKGRAY : getColor(attempt, j);
     }
   }
@@ -84,6 +103,40 @@ function beatCell(i, j) {
   cell.animate(keyFrames, animationTiming);
 }
 
+function flipCell(i, j, { delay, duration }) {
+  const rows = grid.getElementsByClassName("row");
+  const cell = rows[i].getElementsByClassName("cell")[j];
+  const flipper = cell.querySelector(".flipper");
+  const keyFrames = [
+    { transform: `rotateX(0deg)` },
+    { transform: `rotateX(180deg)` },
+  ];
+  const animationTiming = {
+    duration,
+    delay,
+    fill: "forwards",
+    easing: "ease-out",
+  };
+  return flipper.animate(keyFrames, animationTiming);
+}
+
+async function flipRow(i, speed = "slow") {
+  isFlipping = true;
+  if (!["slow", "fast"].includes(speed)) {
+    throw Error("speed is required to be 'slow' or 'fast'");
+  }
+  const animations = [];
+  for (let j = 0; j < 5; j++) {
+    const animation = flipCell(i, j, {
+      duration: speed === "slow" ? 800 : 400,
+      delay: j * 300,
+    });
+    animations.push(animation);
+  }
+  await Promise.all(animations.map((a) => a.finished));
+  isFlipping = false;
+}
+
 /**
  * @param {KeyboardEvent} e
  */
@@ -92,12 +145,25 @@ function handleKey(e) {
     return;
   }
 
+  if (isFlipping) {
+    return;
+  }
+
+  if (e.ctrlKey || e.metaKey) {
+    return;
+  }
+
+  if (e.repeat) {
+    return;
+  }
+
   const prevAttempt = currentAttempt;
   if (/^[a-zA-Z]$/.test(e.key)) {
     if (currentAttempt.length === 5) {
       return;
     }
-    currentAttempt += e.key;
+    const input = e.key.toLowerCase();
+    currentAttempt += input;
   } else if (e.key === "Backspace") {
     currentAttempt = currentAttempt.slice(0, -1);
   } else if (e.key === "Enter") {
@@ -113,18 +179,21 @@ function handleKey(e) {
 
     gameHistory.push(currentAttempt);
     currentAttempt = "";
+
+    flipRow(gameHistory.length - 1, "slow").then(() => {
+      console.log("finished");
+      if (secret === gameHistory.at(-1)) {
+        winGame();
+        return;
+      }
+
+      if (gameHistory.length === 6) {
+        loseGame();
+        return;
+      }
+    });
   }
   updateGrid();
-
-  if (secret === gameHistory.at(-1)) {
-    winGame();
-    return;
-  }
-
-  if (gameHistory.length === 6) {
-    loseGame();
-    return;
-  }
 
   if (prevAttempt < currentAttempt) {
     beatCell(gameHistory.length, currentAttempt.length - 1);
@@ -139,6 +208,14 @@ function winGame() {
 function loseGame() {
   alert(secret);
   isGameEnd = true;
+}
+
+function loadGame() {
+  /* Not implemented yet */
+}
+
+function saveGame() {
+  /* Not implemented yet */
 }
 
 buildGrid();
