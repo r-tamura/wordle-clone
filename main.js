@@ -72,7 +72,7 @@ function buildCell() {
 
 function updateGrid() {
   const rows = $grid.getElementsByClassName("row");
-  for (let i = 0; i < gameHistory.length + 1; i++) {
+  for (let i = 0; i < Math.min(gameHistory.length + 1, 6); i++) {
     const row = rows[i];
     const cells = row.getElementsByClassName("cell");
     const attempt = gameHistory[i] ?? currentAttempt;
@@ -132,7 +132,7 @@ function updateKeyboard() {
       const char = attempt[i];
       const color = getColor(attempt, i);
       const currentBestColor = colorMap.get(char);
-      if (currentAttempt) {
+      if (currentBestColor) {
         colorMap.set(char, getBetterColor(color, currentBestColor));
       } else {
         colorMap.set(char, color);
