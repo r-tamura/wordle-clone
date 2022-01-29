@@ -1,8 +1,8 @@
 const $grid = document.getElementById("grid");
-
+const $keyboard = document.getElementById("keyboard");
 const DARKGRAY = "#222";
 const GRAY = "#555";
-const LIGHTGRAY = "#AAA";
+const LIGHTGRAY = "#888";
 const YELLOW = "#b59f3b";
 const GREEN = "#538d4e";
 
@@ -48,8 +48,9 @@ function buildGrid() {
     $grid.appendChild($row, "fast");
   }
   updateGrid();
-  gameHistory.forEach((_, i) => {
-    flipRow(i, "fast");
+  const animations = gameHistory.map((_, i) => flipRow(i, "fast"));
+  Promise.allSettled(animations).then(() => {
+    updateKeyboard();
   });
 }
 
@@ -89,6 +90,62 @@ function updateGrid() {
   }
 }
 
+function buildKeyboard() {
+  const rows = ["qwertyuiop", "asdfghjkl", "$Ezxcvbnm$B"];
+
+  for (const row of rows) {
+    const $row = document.createElement("div");
+    $row.classList.add("row");
+    let $key;
+    for (let j = 0; j < row.length; j++) {
+      let classes = ["key"];
+      if (row[j] === "$") {
+        j++;
+        if (row[j] === "E") {
+          $key = document.createElement("div");
+          $key.textContent = "Enter";
+          classes.push("enter");
+        } else if (row[j] === "B") {
+          $key = document.createElement("div");
+          // TODO: Replace with SVG image
+          $key.textContent = "Back";
+          classes.push("backspace");
+        }
+      } else {
+        $key = document.createElement("div");
+        $key.textContent = row[j];
+      }
+      $key.classList.add(...classes);
+      $row.appendChild($key);
+    }
+    $keyboard.appendChild($row);
+  }
+}
+
+function updateKeyboard() {
+  const colorMap = new Map();
+
+  for (const attempt of gameHistory) {
+    for (let i = 0; i < attempt.length; i++) {
+      const char = attempt[i];
+      const color = getColor(attempt, i);
+      const currentBestColor = colorMap.get(char);
+      if (currentAttempt) {
+        colorMap.set(char, getBetterColor(color, currentBestColor));
+      } else {
+        colorMap.set(char, color);
+      }
+    }
+  }
+
+  const $keys = $keyboard.querySelectorAll(".key");
+  for (const $key of $keys) {
+    const char = $key.textContent;
+    const color = colorMap.get(char);
+    $key.style.backgroundColor = color ?? LIGHTGRAY;
+  }
+}
+
 function getColor(attempt, index) {
   if (secret[index] === attempt[index]) {
     return GREEN;
@@ -96,6 +153,22 @@ function getColor(attempt, index) {
     return YELLOW;
   }
   return GRAY;
+}
+
+function getBetterColor(c1, c2) {
+  const rankMap = {
+    [GREEN]: 2,
+    [YELLOW]: 1,
+    [GRAY]: 0,
+  };
+
+  if (rankMap[c1] > rankMap[c2]) {
+    return c1;
+  }
+  if (rankMap[c1] < rankMap[c2]) {
+    return c2;
+  }
+  return c1;
 }
 
 function beatCell(i, j) {
@@ -196,6 +269,7 @@ function handleKey(e) {
 
     pauseGame = true;
     flipRow(gameHistory.length - 1, "slow").then(() => {
+      updateKeyboard();
       if (gameState === GameState.WON) {
         winGame();
         return;
@@ -241,4 +315,5 @@ function saveGame() {
 
 loadGame();
 buildGrid();
+buildKeyboard();
 window.addEventListener("keydown", handleKey);

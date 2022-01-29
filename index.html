@@ -3,7 +3,7 @@
 <head>
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
-  <title>WORDLE Clone</title>
+  <title>Wordle Clone</title>
 </head>
 
 <body>
@@ -12,53 +12,74 @@
       --black: #111;
       --dark-gray: #444;
       --gray: #555;
-      --right-gray: #aaa;
+      --light-gray: #888;
       --space-small: .5rem;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
     }
 
     html,
     body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
       color: #DDD;
       background-color: var(--black);
     }
 
     #app {
-      width: 370px;
+      display: grid;
+      grid-template-rows: 3rem 1fr 13rem;
+      place-items: center;
+      max-width: 500px;
+      height: 100%;
       max-width: 100vw;
       margin: 0 auto;
       text-align: center;
     }
 
-    #grid {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
+    .header {
+      width: 100%;
     }
 
-    .row {
+    h1 {
+      margin: 0;
+    }
+
+    #grid {
+      width: 370px;
       display: flex;
-      gap: .5rem;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    #grid .row {
+      display: flex;
+      justify-content: center;
+      gap: .4rem;
     }
 
     .cell {
       border-color: var(--gray);
       border-width: 1px;
       border-style: solid;
-      width: 4rem;
-      height: 4rem;
-      line-height: 4rem;
+      width: 3.75rem;
+      height: 3.75rem;
+      line-height: 3.75rem;
       font-size: 2rem;
       font-weight: bold;
       text-transform: uppercase;
     }
 
-    /* entire container, keeps perspective */
     .flip-container {
       perspective: 1000px;
       position: relative;
     }
 
-    /* flip speed goes here */
     .flipper {
       width: 100%;
       height: 100%;
@@ -68,7 +89,6 @@
       position: relative;
     }
 
-    /* hide back of pane during swap */
     .front,
     .back {
       width: 100%;
@@ -79,24 +99,52 @@
       left: 0;
     }
 
-    /* front pane, placed above back */
     .front {
       z-index: 2;
-      /* for firefox 31 */
       transform: rotateX(0deg);
     }
 
-    /* back, initially hidden pane */
     .back {
       transform: rotateX(180deg);
     }
 
+    #keyboard {
+      align-self: baseline;
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      gap: .5rem;
+    }
+
+    #keyboard .row {
+      display: flex;
+      justify-content: center;
+      gap: .5rem;
+    }
+
     .key {
-      background-color: var(--gray);
+      width: 2.5rem;
+      height: 3.5rem;
+      line-height: 3.5rem;
+      padding: 0 .5rem;
+      border-radius: 5px;
+      background-color: var(--light-gray);
+      font-size: .8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .key.enter {
+      width: auto;
+    }
+
+    .key.backspace {
+      width: auto;
     }
   </style>
   <main id="app">
-    <header>
+    <header class="header">
       <h1>WORDLE</h1>
     </header>
     <div id="grid"></div>
