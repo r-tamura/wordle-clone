@@ -116,6 +116,7 @@ function buildKeyboard() {
         $key.textContent = row[j];
       }
       $key.classList.add(...classes);
+      $key.addEventListener("click", handleKeyboadClick);
       $row.appendChild($key);
     }
     $keyboard.appendChild($row);
@@ -220,15 +221,7 @@ async function flipRow(i, speed = "slow") {
 /**
  * @param {KeyboardEvent} e
  */
-function handleKey(e) {
-  if (gameState === GameState.WON || gameState === GameState.LOST) {
-    return;
-  }
-
-  if (pauseGame) {
-    return;
-  }
-
+function handleKeyPress(e) {
   if (e.ctrlKey || e.metaKey) {
     return;
   }
@@ -237,16 +230,39 @@ function handleKey(e) {
     return;
   }
 
+  handleKey(e.key);
+}
+
+/**
+ * @param {MouseEvent<HTMLDivElement>} e
+ */
+function handleKeyboadClick(e) {
+  const $key = e.target;
+  handleKey($key.textContent);
+}
+
+/**
+ * @param {string} key
+ */
+function handleKey(key) {
+  if (gameState === GameState.WON || gameState === GameState.LOST) {
+    return;
+  }
+
+  if (pauseGame) {
+    return;
+  }
+
   const prevAttempt = currentAttempt;
-  if (/^[a-zA-Z]$/.test(e.key)) {
+  if (/^[a-zA-Z]$/.test(key)) {
     if (currentAttempt.length === 5) {
       return;
     }
-    const input = e.key.toLowerCase();
+    const input = key.toLowerCase();
     currentAttempt += input;
-  } else if (e.key === "Backspace") {
+  } else if (key === "Backspace" || key === "Back") {
     currentAttempt = currentAttempt.slice(0, -1);
-  } else if (e.key === "Enter") {
+  } else if (key === "Enter") {
     if (currentAttempt.length < 5) {
       alert("Not enough letters!");
       return;
