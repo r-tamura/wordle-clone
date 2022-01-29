@@ -117,6 +117,7 @@ function buildKeyboard() {
       }
       $key.classList.add(...classes);
       $key.addEventListener("click", handleKeyboadClick);
+      $key.addEventListener("touchstart", handleKeyboardTouchStart);
       $row.appendChild($key);
     }
     $keyboard.appendChild($row);
@@ -237,6 +238,16 @@ function handleKeyPress(e) {
  * @param {MouseEvent<HTMLDivElement>} e
  */
 function handleKeyboadClick(e) {
+  const $key = e.target;
+  handleKey($key.textContent);
+}
+
+/**
+ *
+ * @param {ToushEvent<HTMLDivElement>} e
+ */
+function handleKeyboardTouchStart(e) {
+  e.preventDefault();
   const $key = e.target;
   handleKey($key.textContent);
 }
