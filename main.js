@@ -1,5 +1,6 @@
 const $grid = document.getElementById("grid");
 const $keyboard = document.getElementById("keyboard");
+const GRAY_TONE_0 = "#111";
 const DARKGRAY = "#222";
 const GRAY = "#555";
 const LIGHTGRAY = "#888";
@@ -117,7 +118,9 @@ function buildKeyboard() {
       }
       $key.classList.add(...classes);
       $key.addEventListener("click", handleKeyboadClick);
-      $key.addEventListener("touchstart", handleKeyboardTouchStart);
+      $key.addEventListener("touchstart", handleKeyboardTouchStart, {
+        passive: true,
+      });
       $row.appendChild($key);
     }
     $keyboard.appendChild($row);
@@ -316,7 +319,7 @@ function handleKey(key) {
     if (secret === gameHistory.at(-1)) {
       gameState = GameState.WON;
     } else if (gameHistory.length === 6) {
-      gameState - GameState.LOST;
+      gameState = GameState.LOST;
     }
     saveGame();
 
@@ -366,6 +369,53 @@ function saveGame() {
   );
 }
 
+function registerServiceWorker() {
+  if ("serviceWorker" in window.navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const registration = await navigator.serviceWorker.register("./sw.js");
+        console.log(
+          "ServiceWorker registration successful with scope: ",
+          registration.scope
+        );
+      } catch (err) {
+        console.error("ServiceWorker registration failed: ", err);
+      }
+    });
+  }
+}
+
+// function buildInstallButton() {
+//   const $app = document.getElementById("app");
+//   const $promptButton = document.createElement("button");
+//   $promptButton.textContent = "INSTALL WORDLE CLONE";
+//   $promptButton.classList.add("install-button");
+//   $app.appendChild($promptButton);
+//   $promptButton.addEventListener("click", (e) => {
+//     $promptButton.parentElement.removeChild($promptButton);
+//     deferredPrompt.prompt();
+//   });
+// }
+
+// let deferredPrompt;
+// window.addEventListener("beforeinstallprompt", async (e) => {
+//   console.log("BEFORE INSTALL PROMPT!!!!");
+
+//   deferredPrompt = e;
+
+//   buildInstallButton();
+
+//   const choice = await deferredPrompt.userChoice;
+
+//   if (choice.outcome === "accepted") {
+//     console.log("App was installed");
+//   } else {
+//     console.log("App wasn't installed");
+//   }
+//   deferredPrompt = null;
+// });
+
+registerServiceWorker();
 loadGame();
 buildGrid();
 buildKeyboard();
