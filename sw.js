@@ -1,6 +1,6 @@
 // <reference lib="WebWorker" />
 let CACHE_NAME = "WORDLE_CACHE_V1";
-let urlsToCache = ["/", "index.html", "main.js"];
+let urlsToCache = [".", "index.html", "main.js"];
 
 self.addEventListener("install", function (event) {
   // Perform install steps
