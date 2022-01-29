@@ -211,18 +211,40 @@ async function flipRow(i, speed = "slow") {
   const animations = [];
   for (let j = 0; j < 5; j++) {
     const animation = flipCell(i, j, {
-      duration: speed === "slow" ? 800 : 400,
-      delay: j * 300,
+      duration: 600,
+      delay: j * (speed === "slow" ? 400 : 100),
     });
     animations.push(animation);
   }
-  await Promise.all(animations.map((a) => a.finished));
+  return await Promise.all(animations.map((a) => a.finished));
+}
+
+async function shakeRow(i) {
+  const $row = $grid.querySelectorAll(".row");
+  const row = $row[i];
+
+  return await row.animate(
+    [
+      { transform: `translateX(-2px)`, offset: 0.1 },
+      { transform: `translateX(3px)`, offset: 0.2 },
+      { transform: `translateX(-5px)`, offset: 0.3 },
+      { transform: `translateX(5px)`, offset: 0.4 },
+      { transform: `translateX(-5px)`, offset: 0.5 },
+      { transform: `translateX(5px)`, offset: 0.6 },
+      { transform: `translateX(-5px)`, offset: 0.7 },
+      { transform: `translateX(3px)`, offset: 0.8 },
+      { transform: `translateX(-2px)`, offset: 0.9 },
+    ],
+    {
+      duration: 500,
+    }
+  ).finished;
 }
 
 /**
  * @param {KeyboardEvent} e
  */
-function handleKeyPress(e) {
+function handleKeyDown(e) {
   if (e.ctrlKey || e.metaKey) {
     return;
   }
@@ -275,12 +297,16 @@ function handleKey(key) {
     currentAttempt = currentAttempt.slice(0, -1);
   } else if (key === "Enter") {
     if (currentAttempt.length < 5) {
-      alert("Not enough letters!");
+      shakeRow(gameHistory.length).then(() => {
+        alert("Not enough letters!");
+      });
       return;
     }
 
     if (!wordList.includes(currentAttempt)) {
-      alert("Not in word list");
+      shakeRow(gameHistory.length).then(() => {
+        alert("Not in word list");
+      });
       return;
     }
 
@@ -343,4 +369,4 @@ function saveGame() {
 loadGame();
 buildGrid();
 buildKeyboard();
-window.addEventListener("keydown", handleKey);
+window.addEventListener("keydown", handleKeyDown);

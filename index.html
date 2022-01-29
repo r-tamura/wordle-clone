@@ -15,6 +15,7 @@
       --gray: #555;
       --light-gray: #888;
       --space-small: .5rem;
+      font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
     }
 
     *,
@@ -34,11 +35,12 @@
 
     #app {
       display: grid;
-      grid-template-rows: 3rem 1fr 13rem;
+      grid-template-rows: auto 1fr auto;
       place-items: center;
       max-width: 500px;
       height: 100%;
       max-width: 100vw;
+      padding: .5rem 0;
       margin: 0 auto;
       text-align: center;
     }
@@ -48,7 +50,9 @@
     }
 
     h1 {
+      font-size: 2.3rem;
       margin: 0;
+      letter-spacing: .1rem;
     }
 
     #grid {
