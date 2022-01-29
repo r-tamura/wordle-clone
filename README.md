@@ -22,7 +22,7 @@ v1 独自機能の追加など
 - [ ] Web Share API
 - [ ] GapePad API
 - [ ] Web Componets (Custom Elements)
-- [ ] OGP 対応
+- [x] OGP 対応
 
 v2 React 実装 & 細かい残り機能
 
