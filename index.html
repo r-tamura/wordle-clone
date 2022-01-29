@@ -9,16 +9,17 @@
 <body>
   <style>
     :root {
-      --dark-gray: #222;
-      --right-gray: #aaa;
+      --black: #111;
+      --dark-gray: #444;
       --gray: #555;
+      --right-gray: #aaa;
       --space-small: .5rem;
     }
 
     html,
     body {
       color: #DDD;
-      background-color: var(--dark-gray);
+      background-color: var(--black);
     }
 
     #app {
@@ -88,6 +89,10 @@
     /* back, initially hidden pane */
     .back {
       transform: rotateX(180deg);
+    }
+
+    .key {
+      background-color: var(--gray);
     }
   </style>
   <main id="app">

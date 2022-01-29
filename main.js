@@ -1,13 +1,21 @@
-const grid = document.getElementById("grid");
-
-const gameHistory = [];
-let currentAttempt = "";
+const $grid = document.getElementById("grid");
 
 const DARKGRAY = "#222";
 const GRAY = "#555";
 const LIGHTGRAY = "#AAA";
 const YELLOW = "#b59f3b";
 const GREEN = "#538d4e";
+
+const GameState = {
+  IN_PROGRESS: "IN_PROGRESS",
+  WON: "WON",
+  LOST: "LOST",
+};
+
+let gameHistory = [];
+let currentAttempt = "";
+let gameState = GameState.IN_PROGRESS;
+let pauseGame = false;
 
 const wordList = [
   "apple",
@@ -26,22 +34,23 @@ const wordList = [
   "japan",
 ];
 
-const randomIndex = Math.floor(Math.random() * wordList.length);
-const secret = wordList[randomIndex];
-
-let isGameEnd = false;
-let isFlipping = false;
+let randomIndex = Math.floor(Math.random() * wordList.length);
+let secret = wordList[randomIndex];
 
 function buildGrid() {
   for (let i = 0; i < 6; i++) {
-    const row = document.createElement("div");
-    row.classList.add("row");
+    const $row = document.createElement("div");
+    $row.classList.add("row");
     for (let j = 0; j < 5; j++) {
-      const cell = buildCell();
-      row.appendChild(cell);
+      const $cell = buildCell();
+      $row.appendChild($cell);
     }
-    grid.appendChild(row);
+    $grid.appendChild($row, "fast");
   }
+  updateGrid();
+  gameHistory.forEach((_, i) => {
+    flipRow(i, "fast");
+  });
 }
 
 function buildCell() {
@@ -61,7 +70,7 @@ function buildCell() {
 }
 
 function updateGrid() {
-  const rows = grid.getElementsByClassName("row");
+  const rows = $grid.getElementsByClassName("row");
   for (let i = 0; i < gameHistory.length + 1; i++) {
     const row = rows[i];
     const cells = row.getElementsByClassName("cell");
@@ -90,7 +99,7 @@ function getColor(attempt, index) {
 }
 
 function beatCell(i, j) {
-  const rows = grid.getElementsByClassName("row");
+  const rows = $grid.getElementsByClassName("row");
   const cell = rows[i].getElementsByClassName("cell")[j];
   const keyFrames = [
     { transform: `scale(0.9)` },
@@ -104,7 +113,7 @@ function beatCell(i, j) {
 }
 
 function flipCell(i, j, { delay, duration }) {
-  const rows = grid.getElementsByClassName("row");
+  const rows = $grid.getElementsByClassName("row");
   const cell = rows[i].getElementsByClassName("cell")[j];
   const flipper = cell.querySelector(".flipper");
   const keyFrames = [
@@ -121,7 +130,6 @@ function flipCell(i, j, { delay, duration }) {
 }
 
 async function flipRow(i, speed = "slow") {
-  isFlipping = true;
   if (!["slow", "fast"].includes(speed)) {
     throw Error("speed is required to be 'slow' or 'fast'");
   }
@@ -134,18 +142,17 @@ async function flipRow(i, speed = "slow") {
     animations.push(animation);
   }
   await Promise.all(animations.map((a) => a.finished));
-  isFlipping = false;
 }
 
 /**
  * @param {KeyboardEvent} e
  */
 function handleKey(e) {
-  if (isGameEnd) {
+  if (gameState === GameState.WON || gameState === GameState.LOST) {
     return;
   }
 
-  if (isFlipping) {
+  if (pauseGame) {
     return;
   }
 
@@ -180,17 +187,25 @@ function handleKey(e) {
     gameHistory.push(currentAttempt);
     currentAttempt = "";
 
+    if (secret === gameHistory.at(-1)) {
+      gameState = GameState.WON;
+    } else if (gameHistory.length === 6) {
+      gameState - GameState.LOST;
+    }
+    saveGame();
+
+    pauseGame = true;
     flipRow(gameHistory.length - 1, "slow").then(() => {
-      console.log("finished");
-      if (secret === gameHistory.at(-1)) {
+      if (gameState === GameState.WON) {
         winGame();
         return;
       }
 
-      if (gameHistory.length === 6) {
+      if (gameState === GameState.LOST) {
         loseGame();
         return;
       }
+      pauseGame = false;
     });
   }
   updateGrid();
@@ -202,21 +217,28 @@ function handleKey(e) {
 
 function winGame() {
   alert("You won!");
-  isGameEnd = true;
 }
 
 function loseGame() {
   alert(secret);
-  isGameEnd = true;
 }
 
 function loadGame() {
-  /* Not implemented yet */
+  const seriarizedState = window.localStorage.getItem("state");
+  if (seriarizedState === null) {
+    return;
+  }
+  const state = JSON.parse(seriarizedState);
+  ({ history: gameHistory, secret, gameState } = state);
 }
 
 function saveGame() {
-  /* Not implemented yet */
+  window.localStorage.setItem(
+    "state",
+    JSON.stringify({ history: gameHistory, secret, gameState })
+  );
 }
 
+loadGame();
 buildGrid();
 window.addEventListener("keydown", handleKey);
