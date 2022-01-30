@@ -92,7 +92,7 @@ function updateGrid() {
 }
 
 function buildKeyboard() {
-  const rows = ["qwertyuiop", "asdfghjkl", "$Ezxcvbnm$B"];
+  const rows = ["qwertyuiop", "$Sasdfghjkl$S", "$Ezxcvbnm$B"];
 
   for (const row of rows) {
     const $row = document.createElement("div");
@@ -103,24 +103,27 @@ function buildKeyboard() {
       if (row[j] === "$") {
         j++;
         if (row[j] === "E") {
-          $key = document.createElement("div");
+          $key = document.createElement("button");
           $key.textContent = "Enter";
           classes.push("enter");
         } else if (row[j] === "B") {
-          $key = document.createElement("div");
+          $key = document.createElement("button");
           // TODO: Replace with SVG image
           $key.textContent = "Back";
           classes.push("backspace");
+        } else if (row[j] === "S") {
+          $key = document.createElement("div");
+          classes.push("space", "half");
         }
       } else {
-        $key = document.createElement("div");
+        $key = document.createElement("button");
         $key.textContent = row[j];
       }
       $key.classList.add(...classes);
       $key.addEventListener("click", handleKeyboadClick);
-      $key.addEventListener("touchstart", handleKeyboardTouchStart, {
-        passive: true,
-      });
+      // $key.addEventListener("touchstart", handleKeyboardTouchStart, {
+      //   passive: true,
+      // });
       $row.appendChild($key);
     }
     $keyboard.appendChild($row);
@@ -146,6 +149,9 @@ function updateKeyboard() {
   const $keys = $keyboard.querySelectorAll(".key");
   for (const $key of $keys) {
     const char = $key.textContent;
+    if (!char) {
+      continue;
+    }
     const color = colorMap.get(char);
     $key.style.backgroundColor = color ?? LIGHTGRAY;
   }
