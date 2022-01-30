@@ -1,9 +1,14 @@
 // <reference lib="WebWorker" />
-let CACHE_NAME = "WORDLE_CACHE_V1";
-let urlsToCache = [".", "index.html", "main.js"];
+const CACHE_NAME = "WORDLE_CACHE_V_1_1";
+const urlsToCache = [
+  ".",
+  "index.html",
+  "main.js",
+  "word-list-5.json",
+  "secret-word-list-5.json",
+];
 
 self.addEventListener("install", function (event) {
-  // Perform install steps
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
       console.log(`Opened cache: ${CACHE_NAME}`);
