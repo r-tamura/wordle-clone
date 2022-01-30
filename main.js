@@ -91,8 +91,24 @@ function updateGrid() {
   }
 }
 
+function clearGrid() {
+  const $rows = $grid.getElementsByClassName("row");
+  Array.from($rows).forEach(($row, i) => {
+    const $cells = $row.getElementsByClassName("cell");
+    for (const $cell of $cells) {
+      const [$front, $back] = $cell.querySelectorAll(".front, .back");
+      $front.textContent = "";
+      $front.style.borderColor = "";
+      $front.style.backgroundColor = "";
+      $back.textContent = "";
+      $back.style.borderColor = "";
+      $back.style.backgroundColor = "";
+    }
+  });
+}
+
 function buildKeyboard() {
-  const rows = ["qwertyuiop", "asdfghjkl", "$Ezxcvbnm$B"];
+  const rows = ["qwertyuiop", "$Sasdfghjkl$S", "$Ezxcvbnm$B"];
 
   for (const row of rows) {
     const $row = document.createElement("div");
@@ -103,24 +119,27 @@ function buildKeyboard() {
       if (row[j] === "$") {
         j++;
         if (row[j] === "E") {
-          $key = document.createElement("div");
+          $key = document.createElement("button");
           $key.textContent = "Enter";
           classes.push("enter");
         } else if (row[j] === "B") {
-          $key = document.createElement("div");
+          $key = document.createElement("button");
           // TODO: Replace with SVG image
           $key.textContent = "Back";
           classes.push("backspace");
+        } else if (row[j] === "S") {
+          $key = document.createElement("div");
+          classes.push("space", "half");
         }
       } else {
-        $key = document.createElement("div");
+        $key = document.createElement("button");
         $key.textContent = row[j];
       }
       $key.classList.add(...classes);
       $key.addEventListener("click", handleKeyboadClick);
-      $key.addEventListener("touchstart", handleKeyboardTouchStart, {
-        passive: true,
-      });
+      // $key.addEventListener("touchstart", handleKeyboardTouchStart, {
+      //   passive: true,
+      // });
       $row.appendChild($key);
     }
     $keyboard.appendChild($row);
@@ -146,6 +165,9 @@ function updateKeyboard() {
   const $keys = $keyboard.querySelectorAll(".key");
   for (const $key of $keys) {
     const char = $key.textContent;
+    if (!char) {
+      continue;
+    }
     const color = colorMap.get(char);
     $key.style.backgroundColor = color ?? LIGHTGRAY;
   }
@@ -190,7 +212,7 @@ function beatCell(i, j) {
   cell.animate(keyFrames, animationTiming);
 }
 
-function flipCell(i, j, { delay, duration }) {
+function flipCell(i, j, { delay, duration, fill }) {
   const rows = $grid.getElementsByClassName("row");
   const cell = rows[i].getElementsByClassName("cell")[j];
   const flipper = cell.querySelector(".flipper");
@@ -201,13 +223,13 @@ function flipCell(i, j, { delay, duration }) {
   const animationTiming = {
     duration,
     delay,
-    fill: "forwards",
+    fill,
     easing: "ease-out",
   };
   return flipper.animate(keyFrames, animationTiming);
 }
 
-async function flipRow(i, speed = "slow") {
+async function flipRow(i, speed = "slow", fill = "forwards") {
   if (!["slow", "fast"].includes(speed)) {
     throw Error("speed is required to be 'slow' or 'fast'");
   }
@@ -216,6 +238,7 @@ async function flipRow(i, speed = "slow") {
     const animation = flipCell(i, j, {
       duration: 600,
       delay: j * (speed === "slow" ? 400 : 100),
+      fill,
     });
     animations.push(animation);
   }
@@ -345,6 +368,37 @@ function handleKey(key) {
   }
 }
 
+function openSettingPage() {
+  const $app = document.getElementById("app");
+  const $page = document.createElement("div");
+  $page.id = "settings-page";
+  $page.classList.add("settings-page");
+
+  const $resetButton = document.createElement("button");
+  $resetButton.classList.add("button");
+  $resetButton.textContent = "reset game";
+  $resetButton.addEventListener("click", () => {
+    clearGame();
+    clearGrid();
+    updateKeyboard();
+    closeSettingPage();
+  });
+  const $closeButton = document.createElement("button");
+  $closeButton.classList.add("button");
+  $closeButton.addEventListener("click", closeSettingPage);
+  $closeButton.textContent = "close";
+
+  $page.appendChild($resetButton);
+  $page.appendChild($closeButton);
+
+  $app.appendChild($page);
+}
+
+function closeSettingPage() {
+  const $page = document.getElementById("settings-page");
+  $page.parentElement.removeChild($page);
+}
+
 function winGame() {
   alert("You won!");
 }
@@ -367,6 +421,15 @@ function saveGame() {
     "state",
     JSON.stringify({ history: gameHistory, secret, gameState })
   );
+}
+
+function clearGame() {
+  localStorage.clear();
+  gameHistory = [];
+  currentAttempt = "";
+  gameState = GameState.IN_PROGRESS;
+  pauseGame = false;
+  location.reload();
 }
 
 function registerServiceWorker() {
@@ -420,3 +483,6 @@ loadGame();
 buildGrid();
 buildKeyboard();
 window.addEventListener("keydown", handleKeyDown);
+document
+  .getElementById("settings-button")
+  .addEventListener("click", openSettingPage);
