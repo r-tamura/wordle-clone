@@ -307,14 +307,14 @@ function handleKey(key) {
   } else if (key === "Enter") {
     if (currentAttempt.length < 5) {
       shakeRow(gameHistory.length).then(() => {
-        alert("Not enough letters!");
+        buildSnackBar("Not enough letters!");
       });
       return;
     }
 
     if (!wordList.includes(currentAttempt)) {
       shakeRow(gameHistory.length).then(() => {
-        alert("Not in word list");
+        buildSnackBar("Not in word list");
       });
       return;
     }
@@ -402,12 +402,36 @@ function closeSettingPage() {
   $page.parentElement.removeChild($page);
 }
 
+/**
+ *
+ * @param {string} message
+ */
+function buildSnackBar(message, { duration = 2500 } = {}) {
+  const $app = document.getElementById("app");
+  const $snackbar = document.createElement("div");
+  $snackbar.textContent = message;
+  $snackbar.classList.add("snackbar");
+  $snackbar.style.opacity = 0;
+  // CALLBACK HELL!!
+  setTimeout(() => {
+    $snackbar.style.opacity = 1;
+    setTimeout(() => {
+      $snackbar.style.opacity = 0;
+      setTimeout(() => {
+        $snackbar.parentElement.removeChild($snackbar);
+      }, duration + 500);
+    }, duration);
+  });
+
+  $app.appendChild($snackbar);
+}
+
 function winGame() {
-  alert("Great!");
+  buildSnackBar("Great!");
 }
 
 function loseGame() {
-  alert(secret);
+  buildSnackBar(secret.toUpperCase(), { duration: 5000 });
 }
 
 function loadGame() {
