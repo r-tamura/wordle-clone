@@ -412,15 +412,15 @@ function buildSnackBar(message, { duration = 2500 } = {}) {
   $snackbar.textContent = message;
   $snackbar.classList.add("snackbar");
   $snackbar.style.opacity = 0;
-  // CALBACK HELL!!
+  // CALLBACK HELL!!
   setTimeout(() => {
     $snackbar.style.opacity = 1;
     setTimeout(() => {
       $snackbar.style.opacity = 0;
       setTimeout(() => {
         $snackbar.parentElement.removeChild($snackbar);
-      }, duration);
-    }, 2000);
+      }, duration + 500);
+    }, duration);
   });
 
   $app.appendChild($snackbar);
