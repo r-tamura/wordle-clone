@@ -18,25 +18,8 @@ let currentAttempt = "";
 let gameState = GameState.IN_PROGRESS;
 let pauseGame = false;
 
-const wordList = [
-  "apple",
-  "piano",
-  "pizza",
-  "enter",
-  "blitz",
-  "smart",
-  "table",
-  "world",
-  "final",
-  "clock",
-  "earth",
-  "small",
-  "large",
-  "japan",
-];
-
-let randomIndex = Math.floor(Math.random() * wordList.length);
-let secret = wordList[randomIndex];
+let secret;
+let wordList = [];
 
 function buildGrid() {
   for (let i = 0; i < 6; i++) {
@@ -368,7 +351,7 @@ function handleKey(key) {
   }
 }
 
-function openSettingPage() {
+function buildSettingPage() {
   const $app = document.getElementById("app");
   const $page = document.createElement("div");
   $page.id = "settings-page";
@@ -389,6 +372,26 @@ function openSettingPage() {
   $closeButton.textContent = "close";
 
   $page.appendChild($resetButton);
+
+  if (deferredPrompt) {
+    const $promptButton = document.createElement("button");
+    $promptButton.textContent = "INSTALL";
+    $promptButton.classList.add("button");
+    $app.appendChild($promptButton);
+    $promptButton.addEventListener("click", async () => {
+      $promptButton.disabled = true;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        console.log("App was installed");
+      } else {
+        console.log("App wasn't installed");
+      }
+      deferredPrompt = null;
+    });
+    $page.appendChild($promptButton);
+  }
+
   $page.appendChild($closeButton);
 
   $app.appendChild($page);
@@ -400,7 +403,7 @@ function closeSettingPage() {
 }
 
 function winGame() {
-  alert("You won!");
+  alert("Great!");
 }
 
 function loseGame() {
@@ -448,41 +451,42 @@ function registerServiceWorker() {
   }
 }
 
-// function buildInstallButton() {
-//   const $app = document.getElementById("app");
-//   const $promptButton = document.createElement("button");
-//   $promptButton.textContent = "INSTALL WORDLE CLONE";
-//   $promptButton.classList.add("install-button");
-//   $app.appendChild($promptButton);
-//   $promptButton.addEventListener("click", (e) => {
-//     $promptButton.parentElement.removeChild($promptButton);
-//     deferredPrompt.prompt();
-//   });
-// }
+let deferredPrompt;
 
-// let deferredPrompt;
-// window.addEventListener("beforeinstallprompt", async (e) => {
-//   console.log("BEFORE INSTALL PROMPT!!!!");
+window.addEventListener("beforeinstallprompt", async (e) => {
+  console.log("BEFORE INSTALL PROMPT!!!!");
 
-//   deferredPrompt = e;
+  deferredPrompt = e;
+});
 
-//   buildInstallButton();
+async function loadWordList() {
+  const lists = await Promise.allSettled([
+    fetch("./word-list-5.json").then((res) => res.json()),
+    fetch("./secret-word-list-5.json").then((res) => res.json()),
+  ]);
 
-//   const choice = await deferredPrompt.userChoice;
+  return lists;
+}
 
-//   if (choice.outcome === "accepted") {
-//     console.log("App was installed");
-//   } else {
-//     console.log("App wasn't installed");
-//   }
-//   deferredPrompt = null;
-// });
+async function main() {
+  registerServiceWorker();
 
-registerServiceWorker();
-loadGame();
-buildGrid();
-buildKeyboard();
-window.addEventListener("keydown", handleKeyDown);
-document
-  .getElementById("settings-button")
-  .addEventListener("click", openSettingPage);
+  const [secretListResult, rareWordListResult] = await loadWordList();
+  loadGame();
+  // TODO: to check if error occured
+  const secretList = secretListResult.value;
+  wordList = [...secretList, ...rareWordListResult.value];
+  if (secret === undefined) {
+    let randomIndex = Math.floor(Math.random() * secretList.length);
+    secret = secretList[randomIndex];
+  }
+
+  buildGrid();
+  buildKeyboard();
+  window.addEventListener("keydown", handleKeyDown);
+  document
+    .getElementById("settings-button")
+    .addEventListener("click", buildSettingPage);
+}
+
+main();
