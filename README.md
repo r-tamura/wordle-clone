@@ -1,3 +1,9 @@
+# Clordle
+
+A Wordle clone: https://rtam.xyz/wordle-clone
+
+Original Wordle: https://www.powerlanguage.co.uk/wordle/
+
 # TODO
 
 v0 WORDLE クローン
