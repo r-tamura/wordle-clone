@@ -10,9 +10,20 @@ jobs:
       - name: チェックアウト
         uses: actions/checkout@v2
 
+      - name: Setup
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: 依存モジュールインストール
+        run: yarn install --frozen-lockfile
+
+      - name: ビルド
+        run: yarn build --base wordle-clone
+
       - name: デプロイ
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: ./dist

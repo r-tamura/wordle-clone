@@ -1,3 +1,11 @@
+import { registerSW } from "virtual:pwa-register";
+import "./index.css";
+
+const updateSW = registerSW({
+  onNeedRefresh() {},
+  onOfflineReady() {},
+});
+
 const $grid = document.getElementById("grid");
 const $keyboard = document.getElementById("keyboard");
 const GRAY_TONE_0 = "#111";
@@ -181,7 +189,7 @@ function getBetterColor(c1, c2) {
   return c1;
 }
 
-function beatCell(i, j) {
+async function beatCell(i, j) {
   const rows = $grid.getElementsByClassName("row");
   const cell = rows[i].getElementsByClassName("cell")[j];
   const keyFrames = [
@@ -192,7 +200,7 @@ function beatCell(i, j) {
   const animationTiming = {
     duration: 200,
   };
-  cell.animate(keyFrames, animationTiming);
+  return await cell.animate(keyFrames, animationTiming).finished;
 }
 
 function flipCell(i, j, { delay, duration, fill }) {
@@ -485,15 +493,15 @@ window.addEventListener("beforeinstallprompt", async (e) => {
 
 async function loadWordList() {
   const lists = await Promise.allSettled([
-    fetch("./word-list-5.json").then((res) => res.json()),
-    fetch("./secret-word-list-5.json").then((res) => res.json()),
+    fetch("./data/word-list-5.json").then((res) => res.json()),
+    fetch("./data/secret-word-list-5.json").then((res) => res.json()),
   ]);
 
   return lists;
 }
 
 async function main() {
-  registerServiceWorker();
+  // registerServiceWorker();
 
   const [secretListResult, rareWordListResult] = await loadWordList();
   loadGame();
@@ -514,3 +522,5 @@ async function main() {
 }
 
 main();
+
+export {};
